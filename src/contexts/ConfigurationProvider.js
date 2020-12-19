@@ -29,7 +29,7 @@ const ConfigurationProvider = ({children}) => {
         selectedIds: []
     });
 
-    const client = useMemo(() => GithubFactory.create(state.user, state.token), [state.user, state.token]);
+    const client = useMemo(() => GithubFactory.create(state.token), [state.token]);
 
     return (
         <ConfigurationStateContext.Provider value={state}>
