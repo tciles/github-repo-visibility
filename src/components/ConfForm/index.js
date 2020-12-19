@@ -1,12 +1,14 @@
-import { TextField, Button, Typography, FormControlLabel, Checkbox, IconButton, InputAdornment } from "@material-ui/core";
+import { TextField, Button, Typography, FormControlLabel, Checkbox, IconButton, InputAdornment, Container } from "@material-ui/core";
 import { makeStyles } from '@material-ui/core/styles';
+import Alert from '@material-ui/lab/Alert';
 import HelpOutlineRounded from '@material-ui/icons/HelpOutlineRounded';
 import { useConfigurationState, useConfigurationDispatch, useConfigurationGithub } from "../../contexts/ConfigurationProvider"
 import { Fragment } from "react";
 
 const useStyles = makeStyles(theme => ({
     root: {
-        paddingTop: theme.spacing(2)
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(2),
     },
     form: {
         display: "flex",
@@ -26,8 +28,14 @@ const ConfForm = () => {
     const configurationDispatch = useConfigurationDispatch();
     const configurationGithub = useConfigurationGithub();
 
-    const handleOnUserChange = (e) => {
-        configurationDispatch({ type: "SET_USER", payload: e.target.value })
+    const setAlerts = (msg, type = "error") => {
+        const payload = [];
+
+        if (typeof msg === "string") {
+            payload.push({ type, msg });
+        }
+
+        configurationDispatch({ type: "SET_ALERTS", payload })
     }
 
     const handleOnTokenChange = (e) => {
@@ -38,16 +46,35 @@ const ConfForm = () => {
         configurationDispatch({ type: "SET_VISIBILITY", payload: e.target.checked === true })
     }
 
+    const onError = error => {
+        console.log(error.toJSON())
+
+        setAlerts(error.message)
+    }
+
     const handleOnClick = (e) => {
+        setAlerts("Find repositories...", "info")
+        getRepositories(() => {
+            setTimeout(() => { setAlerts([]); }, 0)
+        });
+    }
+
+    const getRepositories = (cb) => {
+        if (!cb) {
+            cb = () => { };
+        }
+
         configurationGithub.getUserRepositories(configurationState.user).then(respositories => {
             configurationDispatch({ type: "SET_REPOSITORIES", payload: respositories })
-        }).catch(error => {
-            console.log(error.toJSON())
-        })
+
+            cb();
+        }).catch(onError)
     }
 
     const handleOnUpdateClick = (e) => {
-        const { selectedIds, repositories, user, visibility } = configurationState;
+        setAlerts("Update repositories...", 'info')
+
+        const { selectedIds, repositories, visibility } = configurationState;
 
         for (const repoId of selectedIds) {
             const repo = repositories.find(r => r.id === parseInt(repoId));
@@ -56,13 +83,14 @@ const ConfForm = () => {
                 continue;
             }
 
-            configurationGithub.updateRepositoryVisibility(user, repo.name, visibility)
+            configurationGithub.updateRepositoryVisibility(repo.full_name, visibility)
                 .then(response => {
-                    handleOnClick()
+                    getRepositories(() => {
+                        setAlerts("All selected project updated", "success")
+                        setTimeout(() => { setAlerts([]); }, 1000)
+                    })
                 })
-                .catch(error => {
-                    console.log(error.toJSON())
-                })
+                .catch(onError)
         }
     }
 
@@ -71,17 +99,10 @@ const ConfForm = () => {
     }
 
     return (
-        <div className={classes.root}>
+        <Container className={classes.root} maxWidth={false}>
             <Typography variant="h6" color="inherit">Configuration</Typography>
 
             <form className={classes.form} noValidate autoComplete="off">
-                <TextField
-                    className={classes.input}
-                    id="outlined-basic"
-                    label="Github user"
-                    variant="outlined"
-                    onChange={handleOnUserChange} />
-
                 <TextField
                     className={classes.input}
                     id="outlined-basic"
@@ -102,30 +123,40 @@ const ConfForm = () => {
                     }}
                     onChange={handleOnTokenChange} />
 
-                {configurationState.user && configurationState.token && (
+                {configurationState.token && (
                     <Button variant="contained" color="primary" onClick={handleOnClick}>Find repositories</Button>
                 )}
 
-                {configurationState.repositories.length > 0 && (
-                    <Fragment>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={configurationState.visibility}
-                                    onChange={handleChange}
-                                    name="visibility"
-                                    color="primary"
-                                />
-                            }
-                            label="Private ?"
-                        />
+                {configurationState.repositories.length > 0 &&
+                    configurationState.selectedIds.length > 0 && (
+                        <Fragment>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={configurationState.visibility}
+                                        onChange={handleChange}
+                                        name="visibility"
+                                        color="primary"
+                                    />
+                                }
+                                label="Private ?"
+                            />
 
-                        <Button variant="contained" color="primary" onClick={handleOnUpdateClick}>Update visibilities</Button>
-                    </Fragment>
-                )}
+                            <Button variant="contained" color="primary" onClick={handleOnUpdateClick}>Update visibilities</Button>
+                        </Fragment>
+                    )}
             </form>
 
-        </div>
+            <div style={{ marginTop: "16px" }}>
+                {configurationState.repositories.length > 0 && configurationState.selectedIds.length < 1 && (
+                    <Alert severity="info">Select a repository</Alert>
+                )}
+
+                {configurationState.alerts.length > 0 && (
+                    configurationState.alerts.map((e, idx) => <Alert severity={e.type} key={idx}>{e.msg}</Alert>)
+                )}
+            </div>
+        </Container>
     );
 }
 

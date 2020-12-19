@@ -3,7 +3,7 @@ import createClient from "./baseClient"
 const BASE_URL = "https://api.github.com"
 
 const GithubFactory = {
-    create: (user, token) => {
+    create: (token) => {
         const config = {
             headers: {
                 "accept": "application/vnd.github.v3+json"
@@ -17,16 +17,8 @@ const GithubFactory = {
         const {get, patch} = createClient(BASE_URL, config);
 
         const client = {
-            _user: user,
-            _token: token,
-
-            getUserRepositories: user => get(`/user/repos?type=all`),
-            updateRepositoryVisibility: (user, repo, visibility = false) => {
-                const data = {};
-                data['private'] = visibility;
-
-                return patch(`/repos/${user}/${repo}`, data);
-            }
+            getUserRepositories: () => get(`/user/repos?type=all`),
+            updateRepositoryVisibility: (repo, visibility = false) => patch(`/repos/${repo}`, {'private': visibility}),
         }
 
         return client;

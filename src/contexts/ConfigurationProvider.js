@@ -7,8 +7,8 @@ const ConfigurationGithubContext = createContext();
 
 const configurationReducer = (state, action) => {
     switch(action.type) {
-        case "SET_USER":
-            return { ...state, user: action.payload }
+        case "SET_ALERTS":
+            return { ...state, alerts: action.payload }
         case "SET_TOKEN":
             return { ...state, token: action.payload }
         case "SET_VISIBILITY":
@@ -22,14 +22,14 @@ const configurationReducer = (state, action) => {
 
 const ConfigurationProvider = ({children}) => {
     const [state, dispatch] = useReducer(configurationReducer, {
-        user: "",
+        alerts: [],
         token: "",
         visibility: true,
         repositories: [],
         selectedIds: []
     });
 
-    const client = useMemo(() => GithubFactory.create(state.user, state.token), [state.user, state.token]);
+    const client = useMemo(() => GithubFactory.create(state.token), [state.token]);
 
     return (
         <ConfigurationStateContext.Provider value={state}>
