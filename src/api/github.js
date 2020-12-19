@@ -18,12 +18,7 @@ const GithubFactory = {
 
         const client = {
             getUserRepositories: () => get(`/user/repos?type=all`),
-            updateRepositoryVisibility: (user, repo, visibility = false) => {
-                const data = {};
-                data['private'] = visibility;
-
-                return patch(`/repos/${user}/${repo}`, data);
-            }
+            updateRepositoryVisibility: (repo, visibility = false) => patch(`/repos/${repo}`, {'private': visibility}),
         }
 
         return client;
