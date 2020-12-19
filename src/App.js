@@ -5,7 +5,7 @@ import {ConfigurationProvider} from "./contexts/ConfigurationProvider"
 const App = () => {
   return (
     <ConfigurationProvider>
-        <AppBar appTitle={"Manage Github Repositories visibility"}/>
+        <AppBar appTitle={"Make my Github repository private"}/>
         <Container/>
     </ConfigurationProvider>
   );
