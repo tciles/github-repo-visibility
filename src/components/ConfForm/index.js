@@ -57,7 +57,9 @@ const ConfForm = () => {
             }
 
             configurationGithub.updateRepositoryVisibility(user, repo.name, visibility)
-                .then(console.log)
+                .then(response => {
+                    handleOnClick()
+                })
                 .catch(error => {
                     console.log(error.toJSON())
                 })
@@ -80,30 +82,32 @@ const ConfForm = () => {
                     variant="outlined"
                     onChange={handleOnUserChange} />
 
-                <Button variant="contained" color="primary" onClick={handleOnClick}>Find repositories</Button>
+                <TextField
+                    className={classes.input}
+                    id="outlined-basic"
+                    label="Github repository token"
+                    variant="outlined"
+                    type="password"
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="start" >
+                                <IconButton
+                                    title="Create your repository token"
+                                    onClick={handleOnTokenHelp}
+                                >
+                                    <HelpOutlineRounded />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                    onChange={handleOnTokenChange} />
+
+                {configurationState.user && configurationState.token && (
+                    <Button variant="contained" color="primary" onClick={handleOnClick}>Find repositories</Button>
+                )}
 
                 {configurationState.repositories.length > 0 && (
                     <Fragment>
-                        <TextField
-                            className={classes.input}
-                            id="outlined-basic"
-                            label="Github repository token"
-                            variant="outlined"
-                            type="password"
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="start" >
-                                        <IconButton
-                                            title="Create your repository token"
-                                            onClick={handleOnTokenHelp}
-                                        >
-                                            <HelpOutlineRounded />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                            onChange={handleOnTokenChange} />
-
                         <FormControlLabel
                             control={
                                 <Checkbox
