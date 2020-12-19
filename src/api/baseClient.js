@@ -10,6 +10,10 @@ const createClient = (baseURL, extraConfig) => {
     const client = axios.create(config);
 
     client.interceptors.response.use(response => {
+        if ("errors" in response) {
+            return response.errors;
+        }
+
         return response.data;
     }, error => {
         return Promise.reject(error);

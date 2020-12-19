@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { DataGrid } from '@material-ui/data-grid';
 import { Container } from '@material-ui/core';
+import {useConfigurationState, useConfigurationDispatch} from "../../contexts/ConfigurationProvider"
 
 const columns = [
   { field: 'id', headerName: 'ID', width: 200 },
@@ -10,11 +11,20 @@ const columns = [
   { field: 'full_name', headerName: 'Full name', width: 300 },
 ];
 
-const RepoList = ({rows, onSelectionChange}) => {
+const RepoList = () => {
+    const configurationState = useConfigurationState();
+    const configurationDispatch = useConfigurationDispatch();
+
+    const onSelectionChange = (newSelection) => {
+        configurationDispatch({type: "SET_SELECTED_IDS", payload: newSelection.rowIds})
+    }
+
+    const repositories = configurationState.repositories.filter(repo => !repo.fork);
+
     return (
         <Container style={{ height: 700, width: '100%', paddingTop: 20 }} maxWidth={false}>
             <DataGrid 
-                rows={rows} 
+                rows={repositories} 
                 columns={columns} 
                 pageSize={25} 
                 checkboxSelection 
