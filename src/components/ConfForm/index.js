@@ -76,6 +76,9 @@ const ConfForm = () => {
 
         const { selectedIds, repositories, visibility } = configurationState;
 
+        const l = selectedIds.length;
+        let i = 0;
+
         for (const repoId of selectedIds) {
             const repo = repositories.find(r => r.id === parseInt(repoId));
 
@@ -85,10 +88,14 @@ const ConfForm = () => {
 
             configurationGithub.updateRepositoryVisibility(repo.full_name, visibility)
                 .then(response => {
-                    getRepositories(() => {
-                        setAlerts("All selected project updated", "success")
-                        setTimeout(() => { setAlerts([]); }, 1000)
-                    })
+                    i++;
+
+                    if (i >= l) {
+                        getRepositories(() => {
+                            setAlerts("All selected project updated", "success")
+                            setTimeout(() => { setAlerts([]); }, 1000)
+                        })
+                    }
                 })
                 .catch(onError)
         }
